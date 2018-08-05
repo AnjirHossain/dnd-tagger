@@ -1,0 +1,60 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+.Dropzone {
+  background-color: #efefef;
+  transition: .3s all;
+  cursor: pointer;
+}
+
+.Dropzone.active {
+  background-color: lightpink;
+}
+
+
+.blinkers {
+  animation: squareLoadingBlink 1s ease-in-out;
+  -webkit-animation: squareLoadingBlink 1s ease-in-out infinite;  /* Saf3.2+, Chrome */
+     -moz-animation: squareLoadingBlink 1s ease-in-out infinite; /* FF4+ */
+      -ms-animation: squareLoadingBlink 1s ease-in-out infinite;  /* IE10 */
+       -o-animation: squareLoadingBlink 1s ease-in-out infinite;  /* Opera 10.5+ */
+}
+
+@-moz-keyframes squareLoadingBlink /* Firefox */ {
+  50% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes squareLoadingBlink /* Safari and Chrome */ {
+  50% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-ms-keyframes squareLoadingBlink /* Safari and Chrome */ {
+  50% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-o-keyframes squareLoadingBlink/* Safari and Chrome */ {
+  50% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 1;
+  }
+}
