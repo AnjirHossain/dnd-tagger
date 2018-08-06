@@ -1,4 +1,13 @@
+@font-face {
+  font-family: 'Atlas-Typewriter-Web-Regular';
+  src: url('fonts/atlas_typewriter/atlas_typewriter_regular/Atlas-Typewriter-Web-Regular.eot') format('eot'),
+  url('fonts/atlas_typewriter/atlas_typewriter_regular/Atlas-Typewriter-Web-Regular.woff') format('woff'),
+  url('fonts/atlas_typewriter/atlas_typewriter_regular/Atlas-Typewriter-Web-Regular.ttf') format('truetype'),
+  url('fonts/atlas_typewriter/atlas_typewriter_regular/Atlas-Typewriter-Web-Regular.svg') format('svg');
+}
+
 body {
+  font-family: 'Atlas-Typewriter-Web-Regular', Arial, Helvetica, sans-serif !important;
   margin: 0;
   padding: 0;
   font-family: sans-serif;

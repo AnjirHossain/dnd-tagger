@@ -8,8 +8,9 @@ import oval from '../styles/oval.svg';
 import placeHolderGradient from '../styles/Rectangle.png';
 
 import { Icon } from 'antd';
-import generateMediaLabels from '../../state/api';
+import generateMediaAnalysis from '../../state/api';
 
+const REGEX_BASE64_FILTER = /^data:image\/(png|jpg|jpeg|gif);base64,/;
 const READER = new FileReader();
 
 const mediaLoadStates = {
@@ -27,6 +28,7 @@ class App extends Component {
       mediaLoaderMeta: {
         status: mediaLoadStates.INITIAL
       },
+      currentMediaMeta: null,
       dragActive: false
     };
 
@@ -92,8 +94,23 @@ class App extends Component {
     this.fileUplRef.click();
   }
   onFileReaderLoad = () => {
-    generateMediaLabels(READER.result.replace(/^data:image\/(png|jpg);base64,/, ''))
-      .then(d => console.log(d));
+    const readerResult = READER.result;
+
+    generateMediaAnalysis(readerResult.replace(REGEX_BASE64_FILTER, ''))
+      .then(data => {
+        this.setState({
+          currentMediaMeta: {
+            ...data,
+            src: readerResult
+          },
+        }, () => {
+          this.setState({
+            mediaLoaderMeta: {
+              status: mediaLoadStates.ANALYSIS_COMPLETE
+            }
+          });
+        });
+      });
   }
   getDndCallToActionContent = () => {
     return <div id="dropZoneContainer"
@@ -167,7 +184,7 @@ class App extends Component {
         <img src={placeHolderGradient}
           style={{
             width: '300px'
-          }}/>
+          }} />
       </div>
       {/* image labels container place holder */}
       <div style={{
@@ -179,7 +196,71 @@ class App extends Component {
       </div>
     </div>;
   }
-  getDndAnalysisCompleteContent = () => {}
+  getDndAnalysisCompleteContent = () => {
+    const { state } = this;
+    const { currentMediaMeta, currentMediaSrc } = state;
+    const {
+      dominantColors,
+      labels,
+      src
+    } = currentMediaMeta;
+
+    return <div style={{
+      position: 'relative',
+      display: 'flex',
+      flexFlow: 'column wrap',
+      maxWidth: '300px'
+    }}>
+      {/* color palatte place holder */}
+      <div style={{
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        zIndex: '900',
+        margin: '10px',
+        display: 'flex',
+        flexDirection: 'row',
+        border: '5px solid #fff'
+      }}>
+        {(dominantColors ? dominantColors : ['#E0E0E0','#BDBDBD','#9E9E9E','#757575']).map((el, index) => {
+          return <span className={ dominantColors ? null : 'blinkers' } key={index} style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '15px',
+            backgroundColor: el
+          }}></span>
+        })}
+      </div>
+      {/* image container place holder */}
+      <div>
+        <img src={src || placeHolderGradient}
+          style={{
+            width: '300px'
+          }}/>
+      </div>
+      {/* image labels container place holder */}
+      <div style={{
+        margin: '10px',
+        display: 'flex',
+        flexFlow: 'row wrap'
+      }}>
+        {
+          labels ? labels.map((lText, lIndex) => {
+            return <span style={{
+              marginRight: '5px',
+              marginBottom: '5px',
+              padding: '5px',
+              backgroundColor: '#eee' }} key={lIndex}>
+              {`#${lText}`}
+            </span>
+          }) : (<span className='blinkers'>
+            loading labels...
+          </span>)
+        }
+      </div>
+    </div>;
+  }
   render = () => {
     const { state } = this;
     const { mediaLoaderMeta } = state;
