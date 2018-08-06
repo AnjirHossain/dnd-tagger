@@ -13,7 +13,7 @@ const getProcessColors = colors => {
 const getProcessLabels = labelAnnotations => {
     return labelAnnotations
         .filter(ann => ann.score > 0.75)
-        .map(filteredAnn => filteredAnn.description);
+        .map(filteredAnn => filteredAnn.description.split(' ').join(''));
 }
 
 const getGCVAHeaders = imageDataUrl => ({

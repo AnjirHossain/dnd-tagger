@@ -15,7 +15,6 @@ const READER = new FileReader();
 
 const mediaLoadStates = {
   INITIAL: 'INITIAL',
-  LOADING_INITIATED: 'LOADING_INITIATED',
   ANALYSIS_INITIATED: 'ANALYSIS_INITIATED',
   ANALYSIS_COMPLETE: 'ANALYSIS_COMPLETE'
 };
@@ -39,10 +38,18 @@ class App extends Component {
 
     this.getDndCallToActionContent = this.getDndCallToActionContent.bind(this);
     this.getDndAnalysisInitiatedContent = this.getDndAnalysisInitiatedContent.bind(this);
-    this.getDndLoadingInitiatedContent = this.getDndLoadingInitiatedContent.bind(this);
     this.onFileReaderLoad = this.onFileReaderLoad.bind(this);
 
     READER.addEventListener('load', this.onFileReaderLoad);
+  }
+  getInitialState = () => {
+    return {
+      mediaLoaderMeta: {
+        status: mediaLoadStates.INITIAL
+      },
+      currentMediaMeta: null,
+      dragActive: false
+    };
   }
   handleDragLeave = e => {
     e.preventDefault();
@@ -121,7 +128,8 @@ class App extends Component {
         justifyContent: 'center',
         width: '300px',
         height: '300px',
-        backgroundColor: '#efefef'
+        padding: '10px',
+        textAlign: 'center'
       }}
       className={'Dropzone' + (this.state.dragActive ? ' active' : '')}
       onClick={this.triggerClick}
@@ -135,24 +143,9 @@ class App extends Component {
         multiple="false"
         style={{ display: "none", zIndex: "-100" }}
         />
-      <Icon style={{ margin: '10px' }} type="plus-circle-o" />
       <span style={{ margin: '10px' }}>
         Click or drag and drop an image here to begin analyzing
       </span>
-    </div>;
-  }
-  getDndLoadingInitiatedContent = () => {
-    return <div style={{
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '300px',
-      height: '300px',
-      backgroundColor: '#efefef'
-    }}>
-      <img src={oval} alt='loading spinner' width='30px' height='30px'/>
-      <span style={{ margin: '10px' }}>Uploading...</span>
     </div>;
   }
   getDndAnalysisInitiatedContent = () => {
@@ -259,6 +252,21 @@ class App extends Component {
           </span>)
         }
       </div>
+      <button onClick={() => {
+          this.setState(this.getInitialState())
+        }}
+        style={{
+          maxWidth: '300px',
+          WebkitAppearance: 'none',
+          padding: '5px',
+          margin: '5px 0px',
+          backgroundColor: '#F44336',
+          color: '#fff',
+          border: 'none',
+          cursor: 'pointer'
+        }}>
+        Clear image
+      </button>
     </div>;
   }
   render = () => {
@@ -272,9 +280,6 @@ class App extends Component {
       case mediaLoadStates.INITIAL:
         dndContent = this.getDndCallToActionContent();
         break;
-      case mediaLoadStates.LOADING_INITIATED:
-        dndContent = this.getDndLoadingInitiatedContent();
-        break;
       case mediaLoadStates.ANALYSIS_INITIATED:
         dndContent = this.getDndAnalysisInitiatedContent();
         break;
@@ -286,7 +291,9 @@ class App extends Component {
     return (
       <div style={{
         display: 'flex',
-        flexFlow: 'column wrap'
+        flexFlow: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}>
         {
           dndContent || 'Nothing to show, check App.js:render for errors'
