@@ -4,9 +4,11 @@
   "private": true,
   "dependencies": {
     "antd": "^3.7.3",
+    "dotenv": "^6.0.0",
     "fs": "^0.0.1-security",
     "immutable": "^3.8.2",
     "node-fetch": "^2.2.0",
+    "prop-types": "^15.6.2",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-redux": "^5.0.7",
@@ -24,7 +26,7 @@
   },
   "git": {
     "scripts": {
-      "pre-push": "surge --project ./build --domain https://example-githooks.surge.sh"
+      "pre-push": "surge --project ./build --domain https://kind-amusement.surge.sh"
     }
   }
 }

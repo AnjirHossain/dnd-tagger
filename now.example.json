@@ -1,0 +1,5 @@
+{
+  "env": {
+    "REACT_APP_GCVA_KEY": "<GOOGLE CLOUD VISION API KEY>"
+  }
+}

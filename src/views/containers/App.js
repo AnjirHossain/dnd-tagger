@@ -3,22 +3,59 @@ import React, {
   Fragment
 } from 'react';
 import 'antd/dist/antd.css';
-import '../styles/App.css';
-import oval from '../styles/oval.svg';
 import placeHolderGradient from '../styles/Rectangle.png';
 
-import { Icon } from 'antd';
 import generateMediaAnalysis from '../../state/api';
+import {
+  resetState,
+  setUploadInitiatedStatus,
+  setUploadError,
+  setUnhandledError,
+  setDragActive,
+  setDragInactive,
+  syncMediaAnalysis,
+  dissmissError
+}
+from '../../state/stateChanges';
+
+import {
+  mediaLoadStates
+} from '../../consts';
+
+import Media from '../components/Media';
+import ColorInspector from '../components/ColorInspector';
+import Error from '../components/Error';
+import LabelList from '../components/LabelList';
 
 const REGEX_BASE64_FILTER = /^data:image\/(png|jpg|jpeg|gif);base64,/;
 const READER = new FileReader();
-
-const mediaLoadStates = {
-  INITIAL: 'INITIAL',
-  ANALYSIS_INITIATED: 'ANALYSIS_INITIATED',
-  ANALYSIS_COMPLETE: 'ANALYSIS_COMPLETE'
+const DEFAULT_COLORPALETTE = [{
+    hex: '#E0E0E0',
+    rgb: 'rgb(224,224,224)'
+  },
+  {
+    hex: '#BDBDBD',
+    rgb: 'rgb(189,189,189)'
+  },
+  {
+    hex: '#9E9E9E',
+    rgb: 'rgb(158,158,158)'
+  },
+  {
+    hex: '#757575',
+    rgb: 'rgb(117,117,117)'
+  }
+];
+const dropZoneDefaultStyles = {
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '300px',
+  height: '300px',
+  padding: '10px',
+  textAlign: 'center'
 };
-
 class App extends Component {
   constructor(props) {
     super(props);
@@ -28,7 +65,8 @@ class App extends Component {
         status: mediaLoadStates.INITIAL
       },
       currentMediaMeta: null,
-      dragActive: false
+      dragActive: false,
+      error: null
     };
 
     this.handleDragLeave = this.handleDragLeave.bind(this);
@@ -42,95 +80,61 @@ class App extends Component {
 
     READER.addEventListener('load', this.onFileReaderLoad);
   }
-  getInitialState = () => {
-    return {
-      mediaLoaderMeta: {
-        status: mediaLoadStates.INITIAL
-      },
-      currentMediaMeta: null,
-      dragActive: false
-    };
-  }
-  handleDragLeave = e => {
-    e.preventDefault();
 
-    this.setState({
-      mediaLoaderMeta: {
-        status: mediaLoadStates.INITIAL,
-        currentMedia: null
-      },
-      dragActive: false
-    });
+  // event handlers
+  handleDragLeave(e) {
+    e.preventDefault();
+    this.setState(setDragInactive);
   }
-  handleDrop = e => {
+  handleDrop(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    // set ui feedback to analysis initiated state
-    this.setState({
-      mediaLoaderMeta: {
-        status: mediaLoadStates.ANALYSIS_INITIATED
-      }
-    });
+    // set ui feedback to upload initiated state
+    this.setState(setUploadInitiatedStatus);
 
     /* start: event validation cycle */
     const eType = e.type;
 
     if (eType !== 'change' && eType !== 'drop') {
-      throw new Error('Unrecognized event');
+       this.setState(setUnhandledError('Unrecognized event, check elements to ensure correct markup is in place'));
+       return;
     }
 
     const fileInputSource = eType === 'change' ? this.fileUplRef : e.dataTransfer;
     const loadedMedia = fileInputSource.files[0];
 
     if (!loadedMedia || !loadedMedia.type.match(/image.*/)) {
-      throw new Error('Unrecognized file type');
+      this.setState(setUploadError('Unrecognized file type, please provide one of png, jpg or gif formats'));
+      return;
     }
     /* end: event validation cycle */
 
     // side effect warning
     READER.readAsDataURL(loadedMedia);
   }
-  handleDragOver = e => {
+  handleDragOver(e) {
     e.preventDefault();
-    this.setState({
-      dragActive: true
-    });
+    this.setState(setDragActive);
   }
-  triggerClick = () => {
+
+  // side effect for controlled proxy input component
+  triggerClick() {
     this.fileUplRef.click();
   }
-  onFileReaderLoad = () => {
-    const readerResult = READER.result;
 
-    generateMediaAnalysis(readerResult.replace(REGEX_BASE64_FILTER, ''))
-      .then(data => {
-        this.setState({
-          currentMediaMeta: {
-            ...data,
-            src: readerResult
-          },
-        }, () => {
-          this.setState({
-            mediaLoaderMeta: {
-              status: mediaLoadStates.ANALYSIS_COMPLETE
-            }
-          });
-        });
-      });
+  // api interaction handlers
+  onFileReaderLoad = async () => {
+    const readerResult = READER.result;
+    const analysisPayload = await generateMediaAnalysis(readerResult.replace(REGEX_BASE64_FILTER, ''))
+
+    this.setState(syncMediaAnalysis(analysisPayload, readerResult, analysisPayload.labels.join(' ')));
   }
-  getDndCallToActionContent = () => {
+
+  // ui composition handlers
+  getDndCallToActionContent() {
     return <div id="dropZoneContainer"
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '300px',
-        height: '300px',
-        padding: '10px',
-        textAlign: 'center'
-      }}
+      style={dropZoneDefaultStyles}
       className={'Dropzone' + (this.state.dragActive ? ' active' : '')}
       onClick={this.triggerClick}
       onDrop={this.handleDrop}
@@ -148,37 +152,20 @@ class App extends Component {
       </span>
     </div>;
   }
-  getDndAnalysisInitiatedContent = () => {
+  getDndAnalysisInitiatedContent() {
     return <div style={{
       position: 'relative',
       display: 'flex',
       flexFlow: 'column wrap'
     }}>
+
       {/* color palatte place holder */}
-      <div style={{
-        position: 'absolute',
-        top: '0',
-        left: '0',
-        zIndex: '900',
-        margin: '10px',
-        display: 'flex',
-        flexDirection: 'row',
-      }}>
-        {['#E0E0E0','#BDBDBD','#9E9E9E','#757575'].map((el, index) => <span className='blinkers' key={index} style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '15px',
-          backgroundColor: el
-        }}></span>)}
-      </div>
+      <ColorInspector isPlaceHolder={true} colors={DEFAULT_COLORPALETTE} />
+
+
       {/* image container place holder */}
-      <div>
-        <img src={placeHolderGradient}
-          style={{
-            width: '300px'
-          }} />
-      </div>
+      <Media src={placeHolderGradient}
+        alt='Image processing gradient place holder' />
       {/* image labels container place holder */}
       <div style={{
         margin: '10px',
@@ -189,13 +176,14 @@ class App extends Component {
       </div>
     </div>;
   }
-  getDndAnalysisCompleteContent = () => {
+  getDndAnalysisCompleteContent() {
     const { state } = this;
     const { currentMediaMeta, currentMediaSrc } = state;
     const {
       dominantColors,
       labels,
-      src
+      src,
+      alt
     } = currentMediaMeta;
 
     return <div style={{
@@ -205,58 +193,20 @@ class App extends Component {
       maxWidth: '300px'
     }}>
       {/* color palatte place holder */}
-      <div style={{
-        position: 'absolute',
-        top: '0',
-        left: '0',
-        zIndex: '900',
-        margin: '10px',
-        display: 'flex',
-        flexDirection: 'row',
-        border: '5px solid #fff'
-      }}>
-        {(dominantColors ? dominantColors : ['#E0E0E0','#BDBDBD','#9E9E9E','#757575']).map((el, index) => {
-          return <span className={ dominantColors ? null : 'blinkers' } key={index} style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '15px',
-            backgroundColor: el
-          }}></span>
-        })}
-      </div>
+      <ColorInspector isPlaceHolder={false} colors={dominantColors} />
       {/* image container place holder */}
-      <div>
-        <img src={src || placeHolderGradient}
-          style={{
-            width: '300px'
-          }}/>
-      </div>
+      <Media src={src || placeHolderGradient} alt={alt} />
       {/* image labels container place holder */}
-      <div style={{
-        margin: '10px',
-        display: 'flex',
-        flexFlow: 'row wrap'
-      }}>
-        {
-          labels ? labels.map((lText, lIndex) => {
-            return <span style={{
-              marginRight: '5px',
-              marginBottom: '5px',
-              padding: '5px',
-              backgroundColor: '#eee' }} key={lIndex}>
-              {`#${lText}`}
-            </span>
-          }) : (<span className='blinkers'>
-            loading labels...
-          </span>)
-        }
-      </div>
+      {
+        <LabelList labels={labels}
+          noLabels={!!labels && labels.length === 0 ? 'No labels with 75% accuracy or greater were found via the Google Cloud Vision API': null} />
+      }
+      {/* reset app state call to action */}
       <button onClick={() => {
-          this.setState(this.getInitialState())
+          this.setState(resetState)
         }}
         style={{
-          maxWidth: '300px',
+          maxWidth: '50vw',
           WebkitAppearance: 'none',
           padding: '5px',
           margin: '5px 0px',
@@ -269,12 +219,22 @@ class App extends Component {
       </button>
     </div>;
   }
-  render = () => {
+  getErrorContent() {
     const { state } = this;
-    const { mediaLoaderMeta } = state;
+    const { error } = state;
+
+    return <Error dismissError={() => {
+      this.setState(dissmissError);
+    }} {...error} />
+  }
+
+  render() {
+    const { state } = this;
+    const { mediaLoaderMeta, error } = state;
     const { status } = mediaLoaderMeta;
 
     let dndContent;
+    let errorContent = !!error ? this.getErrorContent() : null;
 
     switch (status) {
       case mediaLoadStates.INITIAL:
@@ -286,20 +246,22 @@ class App extends Component {
       case mediaLoadStates.ANALYSIS_COMPLETE:
         dndContent = this.getDndAnalysisCompleteContent();
         break;
+      default:
+        dndContent = 'Nothing to show, check App.js:render for errors';
     }
 
-    return (
+    return <Fragment>
+      { errorContent }
       <div style={{
         display: 'flex',
         flexFlow: 'column',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        maxWidth: '50vw'
       }}>
-        {
-          dndContent || 'Nothing to show, check App.js:render for errors'
-        }
+        { dndContent }
       </div>
-    );
+    </Fragment>;
   }
 }
 
