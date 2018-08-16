@@ -1,4 +1,4 @@
-#Image analysis using React and Google Cloud Vision API.
+# Image analysis using React and Google Cloud Vision API.
 
 This project utilizes the [Google Cloud Vision API](https://cloud.google.com/vision/), to conduct annotations of uploaded media. Displaying the dominant colors and
 most accurate image contents found by the api (accuracy tolerance is set to 75%).
