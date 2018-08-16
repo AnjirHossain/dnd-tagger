@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "antd": "^3.7.3",
-    "dotenv": "^6.0.0",
     "fs": "^0.0.1-security",
     "immutable": "^3.8.2",
     "node-fetch": "^2.2.0",
@@ -12,10 +11,12 @@
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-redux": "^5.0.7",
-    "react-scripts": "1.1.4"
+    "react-scripts": "1.1.4",
+    "serve": "^9.6.0"
   },
   "scripts": {
     "start": "react-scripts start",
+    "now-start": "serve --single ./build",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
@@ -23,10 +24,5 @@
   "devDependencies": {
     "git-scripts": "^0.2.1",
     "surge": "^0.20.1"
-  },
-  "git": {
-    "scripts": {
-      "pre-push": "surge --project ./build --domain https://kind-amusement.surge.sh"
-    }
   }
 }
