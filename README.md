@@ -7,4 +7,4 @@ most accurate image contents found by the api (accuracy tolerance is set to 75%)
 1. Deployments are done using [zeit/now](https://zeit.co/docs/examples/create-react-app)
 2. [Google Cloud Vision Api key](https://cloud.google.com/vision/docs/how-to)
 3. `npm install`
-4. `yarn start` or `npm start`
+4. `REACT_APP_GCVA_KEY=<google cloud vision api key> npm start`
