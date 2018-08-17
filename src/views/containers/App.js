@@ -4,7 +4,6 @@ import React, {
 } from 'react';
 import 'antd/dist/antd.css';
 import placeHolderGradient from '../styles/Rectangle.png';
-
 import generateMediaAnalysis from '../../state/api';
 import {
   resetState,
@@ -15,11 +14,13 @@ import {
   setDragInactive,
   syncMediaAnalysis,
   dissmissError
-}
-from '../../state/stateChanges';
+} from '../../state/stateChanges';
 
 import {
-  mediaLoadStates
+  mediaLoadStates,
+  REGEX_BASE64_FILTER,
+  READER,
+  DEFAULT_COLORPALETTE
 } from '../../consts';
 
 import Media from '../components/Media';
@@ -27,25 +28,6 @@ import ColorInspector from '../components/ColorInspector';
 import Error from '../components/Error';
 import LabelList from '../components/LabelList';
 
-const REGEX_BASE64_FILTER = /^data:image\/(png|jpg|jpeg|gif);base64,/;
-const READER = new FileReader();
-const DEFAULT_COLORPALETTE = [{
-    hex: '#E0E0E0',
-    rgb: 'rgb(224,224,224)'
-  },
-  {
-    hex: '#BDBDBD',
-    rgb: 'rgb(189,189,189)'
-  },
-  {
-    hex: '#9E9E9E',
-    rgb: 'rgb(158,158,158)'
-  },
-  {
-    hex: '#757575',
-    rgb: 'rgb(117,117,117)'
-  }
-];
 const dropZoneDefaultStyles = {
   display: 'flex',
   flexDirection: 'row',
