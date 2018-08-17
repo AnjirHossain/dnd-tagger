@@ -69,24 +69,15 @@ class App extends Component {
       error: null
     };
 
-    this.handleDragLeave = this.handleDragLeave.bind(this);
-    this.handleDrop = this.handleDrop.bind(this);
-    this.handleDragOver = this.handleDragOver.bind(this);
-    this.triggerClick = this.triggerClick.bind(this);
-
-    this.getDndCallToActionContent = this.getDndCallToActionContent.bind(this);
-    this.getDndAnalysisInitiatedContent = this.getDndAnalysisInitiatedContent.bind(this);
-    this.onFileReaderLoad = this.onFileReaderLoad.bind(this);
-
     READER.addEventListener('load', this.onFileReaderLoad);
   }
 
   // event handlers
-  handleDragLeave(e) {
+  handleDragLeave = e => {
     e.preventDefault();
     this.setState(setDragInactive);
   }
-  handleDrop(e) {
+  handleDrop = e => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -113,26 +104,26 @@ class App extends Component {
     // side effect warning
     READER.readAsDataURL(loadedMedia);
   }
-  handleDragOver(e) {
+  handleDragOver = e => {
     e.preventDefault();
     this.setState(setDragActive);
   }
 
   // side effect for controlled proxy input component
-  triggerClick() {
+  triggerClick = () => {
     this.fileUplRef.click();
   }
 
   // api interaction handlers
   onFileReaderLoad = async () => {
     const readerResult = READER.result;
-    const analysisPayload = await generateMediaAnalysis(readerResult.replace(REGEX_BASE64_FILTER, ''))
+    const analysisPayload = await generateMediaAnalysis(readerResult.replace(REGEX_BASE64_FILTER, ''));
 
     this.setState(syncMediaAnalysis(analysisPayload, readerResult, analysisPayload.labels.join(' ')));
   }
 
   // ui composition handlers
-  getDndCallToActionContent() {
+  getDndCallToActionContent = () => {
     return <div id="dropZoneContainer"
       style={dropZoneDefaultStyles}
       className={'Dropzone' + (this.state.dragActive ? ' active' : '')}
@@ -152,7 +143,7 @@ class App extends Component {
       </span>
     </div>;
   }
-  getDndAnalysisInitiatedContent() {
+  getDndAnalysisInitiatedContent = () => {
     return <div style={{
       position: 'relative',
       display: 'flex',
@@ -176,9 +167,8 @@ class App extends Component {
       </div>
     </div>;
   }
-  getDndAnalysisCompleteContent() {
-    const { state } = this;
-    const { currentMediaMeta, currentMediaSrc } = state;
+  getDndAnalysisCompleteContent = () => {
+    const { currentMediaMeta } = this.state;
     const {
       dominantColors,
       labels,
@@ -219,18 +209,14 @@ class App extends Component {
       </button>
     </div>;
   }
-  getErrorContent() {
-    const { state } = this;
-    const { error } = state;
-
+  getErrorContent = () => {
     return <Error dismissError={() => {
       this.setState(dissmissError);
-    }} {...error} />
+    }} {...this.state.error} />
   }
 
-  render() {
-    const { state } = this;
-    const { mediaLoaderMeta, error } = state;
+  render = () => {
+    const { mediaLoaderMeta, error } = this.state;
     const { status } = mediaLoaderMeta;
 
     let dndContent;
